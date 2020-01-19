@@ -9,9 +9,11 @@
     <version>1.0-SNAPSHOT</version>
 
     <properties>
+        <resultJarName>docdb</resultJarName>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
 
+        <tool.proguard.version>2.0.13</tool.proguard.version>
         <vaadin.widgetset.mode>local</vaadin.widgetset.mode>
         <vaadin.version>8.8.2</vaadin.version>
         <jetty.version>9.4.22.v20191022</jetty.version>
@@ -151,6 +153,8 @@
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
+                    <finalName>${resultJarName}</finalName>
+                    <appendAssemblyId>false</appendAssemblyId>
                     <archive>
                         <manifest>
                             <mainClass>nosql.docdb.Application</mainClass>
@@ -168,6 +172,97 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>com.github.wvengen</groupId>
+                <artifactId>proguard-maven-plugin</artifactId>
+                <version>${tool.proguard.version}</version>
+                <executions>
+                    <execution>
+                        <id>obfuscation-packaging</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>proguard</goal>
+                        </goals>
+                        <configuration>
+                            <proguardVersion>${tool.proguard.version}</proguardVersion>
+                            <obfuscate>true</obfuscate>
+                            <attach>true</attach>
+                            <appendClassifier>false</appendClassifier>
+                            <addMavenDescriptor>true</addMavenDescriptor>
+                            <injar>${resultJarName}.jar</injar>
+                            <injarNotExistsSkip>true</injarNotExistsSkip>
+                            <libs>
+                                <lib>${java.home}/lib/rt.jar</lib>
+                            </libs>
+
+                            <options>
+                                <option>-dontwarn</option>
+                                <option>-keep class javax.** {*;}</option>
+                                <option>-keep class com.vaadin.** {*;}</option>
+                                <option>-keep class server.droporchoose.** {*;}</option>
+                                <option>-keep class com.wcs.wcslib.vaadin.widget.multifileupload.** {*;}</option>
+                                <option>-keep class com.github.daishy.rangeslider.** {*;}</option>
+                                <option>-keep class org.atmosphere.** {*;}</option>
+                                <option>-keep class org.apache.poi.** {*;}</option>
+                                <option>-keep class org.eclipse.jetty.** {*;}</option>
+                                <option>-keep class nosql.docdb.doc_parser.object_model.** {*;}</option>
+                                <option>-keep class nosql.docdb.web_application.statistic_window.PlotData {*;}</option>
+                                <option>-keepdirectories</option>
+                                <option>-keeppackagenames com.vaadin</option>
+                                <option>-keepnames class * implements org.apache.maven.plugin.AbstractMojo</option>
+                                <option>-keepclassmembers class * implements org.apache.maven.plugin.AbstractMojo {
+                                    private <![CDATA[<fields>]]>;
+                                    private <![CDATA[<methods>]]>;
+                                    }
+                                </option>
+                                <option>-keepparameternames</option>
+                                <option>-renamesourcefileattribute SourceFile</option>
+                                <option>-keepattributes Exceptions,InnerClasses,Signature,Deprecated,
+                                    SourceFile,LineNumberTable,*Annotation*,EnclosingMethod
+                                </option>
+                                <option>-target 1.8</option>
+                                <option>-keep public class nosql.docdb.Application {
+                                    public protected *;
+                                    }
+                                </option>
+                                <option>-keepclassmembernames class * {
+                                    java.lang.Class class$(java.lang.String);
+                                    java.lang.Class class$(java.lang.String, boolean);
+                                    }
+                                </option>
+                                <option>-keepclasseswithmembernames,includedescriptorclasses class * {
+                                    native <![CDATA[<methods>]]>;
+                                    }
+                                </option>
+                                <option>-keepclassmembers,allowoptimization enum * {
+                                    public static **[] values();
+                                    public static ** valueOf(java.lang.String);
+                                    }
+                                </option>
+                                <option>-keepclassmembers class * implements java.io.Serializable {
+                                    static final long serialVersionUID;
+                                    private static final java.io.ObjectStreamField[] serialPersistentFields;
+                                    private void writeObject(java.io.ObjectOutputStream);
+                                    private void readObject(java.io.ObjectInputStream);
+                                    java.lang.Object writeReplace();
+                                    java.lang.Object readResolve();
+                                    }
+                                </option>
+
+                            </options>
+                        </configuration>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>net.sf.proguard</groupId>
+                        <artifactId>proguard-base</artifactId>
+                        <version>6.2.2</version>
+                    </dependency>
+
+                </dependencies>
             </plugin>
 
             <plugin>
@@ -202,7 +297,7 @@
                             <outputDirectory>${basedir}/docker_image</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>${build.directory}</directory>
+                                    <directory>${project.build.directory}</directory>
                                     <include>docdb-1.0-SNAPSHOT-jar-with-dependencies.jar</include>
                                 </resource>
                             </resources>
