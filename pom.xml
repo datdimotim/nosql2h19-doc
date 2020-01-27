@@ -206,6 +206,7 @@
                                 <option>-keep class com.github.daishy.rangeslider.** {*;}</option>
                                 <option>-keep class org.atmosphere.** {*;}</option>
                                 <option>-keep class org.apache.poi.** {*;}</option>
+                                <option>-keep class org.apache.xmlbeans.** {*;}</option>
                                 <option>-keep class org.eclipse.jetty.** {*;}</option>
                                 <option>-keep class nosql.docdb.doc_parser.object_model.** {*;}</option>
                                 <option>-keep class nosql.docdb.web_application.statistic_window.PlotData {*;}</option>
